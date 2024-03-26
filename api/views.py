@@ -1,40 +1,39 @@
-from django.shortcuts import get_object_or_404
 from rest_framework import generics
 from rest_framework.pagination import PageNumberPagination
 
-from .models import Location, Item
-from .serializers import LocationSerializer, ItemSerializer
+from .models import Department, Employee
+from .serializers import DepartmentSerializer, EmployeeSerializer
 
+from django.contrib.auth.decorators import login_required
 
 class CustomPagination(PageNumberPagination):
-    page_size = 1
+    page_size = 2
     page_size_query_param = 'page_size'
     max_page_size = 100
 
-
-class ItemList(generics.ListCreateAPIView):
-    queryset = Item.objects.all()
-    serializer_class = ItemSerializer
+class EmployeeList(generics.ListCreateAPIView):
+    queryset = Employee.objects.all()
+    serializer_class = EmployeeSerializer
     pagination_class = CustomPagination
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        location = self.request.query_params.get('location')
-        if location:
-            queryset = queryset.filter(location=location)
+        department_id = self.request.query_params.get('department_id')
+        if department_id:
+            queryset = queryset.filter(department_id=department_id)
         return queryset
 
+class EmployeeDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Employee.objects.all()
+    serializer_class = EmployeeSerializer
+    
 
-class ItemDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Item.objects.all()
-    serializer_class = ItemSerializer
+class DepartmentList(generics.ListCreateAPIView):
+    queryset = Department.objects.all()
+    serializer_class = DepartmentSerializer
+    pagination_class = CustomPagination
 
 
-class LocationDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Location.objects.all()
-    serializer_class = LocationSerializer
-
-
-class LocationList(generics.ListCreateAPIView):
-    queryset = Location.objects.all()
-    serializer_class = LocationSerializer
+class DepartmentDetail(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Department.objects.all()
+    serializer_class = DepartmentSerializer

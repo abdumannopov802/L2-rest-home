@@ -1,15 +1,14 @@
 from rest_framework import serializers
-from .models import Location, Item
+from .models import Department, Employee
 
 
-class ItemSerializer(serializers.ModelSerializer):
+class EmployeeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Item
-        fields = ('__all__')
+        model = Employee
+        fields = ('employee_id', 'name', 'department', 'position', 'salary')
 
 
-class LocationSerializer(serializers.ModelSerializer):
+class DepartmentSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Location
-        fields = ('__all__')
-
+        model = Department
+        fields = ('department_id', 'department_name', 'average_salary')
