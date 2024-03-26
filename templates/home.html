@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 100px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        h2 {
+            color: #333;
+        }
+        p {
+            color: #666;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 3px;
+            margin: 10px;
+            text-decoration: none;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        .btn-green {
+            background-color: #4caf50;
+            color: white;
+        }
+        .btn-blue {
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-red {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .btn-blue:hover {
+            background-color: #0056b3;
+        }
+        .btn-red:hover {
+            background-color: #c82333;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        {% if user.is_authenticated %}
+            <h2>Welcome, {{ user.username }}!</h2>
+            <p>You are logged in.</p>
+            <a href="{% url 'logout' %}" class="btn btn-red">Log out</a>
+            <a href="{% url 'employee_list' %}" class="btn btn-green">Employee List</a>
+            <a href="{% url 'department_list' %}" class="btn btn-blue">Department List</a>
+            <a href="{% url 'admin:index' %}" class="btn btn-green">Admin Panel</a> <!-- Button to access the admin panel -->
+        {% else %}
+            <h2>Welcome to our website!</h2>
+            <p>Please log in or sign up to access more features.</p>
+            <a href="{% url 'login' %}" class="btn btn-blue">Log in</a>
+            <a href="{% url 'signup' %}" class="btn btn-green">Sign up</a>
+        {% endif %}
+    </div>
+</body>
+</html>

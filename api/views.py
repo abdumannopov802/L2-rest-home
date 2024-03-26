@@ -1,10 +1,10 @@
 from rest_framework import generics
 from rest_framework.pagination import PageNumberPagination
-
 from .models import Department, Employee
 from .serializers import DepartmentSerializer, EmployeeSerializer
-
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login, logout 
+from .forms import UserCreationForm, LoginForm
 
 class CustomPagination(PageNumberPagination):
     page_size = 2
@@ -37,3 +37,43 @@ class DepartmentList(generics.ListCreateAPIView):
 class DepartmentDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Department.objects.all()
     serializer_class = DepartmentSerializer
+
+# Home page
+def home(request):
+    return render(request, 'home.html')
+
+# signup page
+def user_signup(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            username = form.cleaned_data.get('username')
+            raw_password = form.cleaned_data.get('password1')
+            user = authenticate(username=username, password=raw_password)
+            if user is not None:
+                login(request, user)
+                return redirect('home')
+    else:
+        form = UserCreationForm()
+    return render(request, 'sign-up.html', {'form': form})
+
+# login page
+def user_login(request):
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            username = form.cleaned_data['username']
+            password = form.cleaned_data['password']
+            user = authenticate(request, username=username, password=password)
+            if user:
+                login(request, user)    
+                return redirect('home')
+    else:
+        form = LoginForm()
+    return render(request, 'log-in.html', {'form': form})
+
+# logout page
+def user_logout(request):
+    logout(request)
+    return redirect('login')
