@@ -1,79 +1,74 @@
-from rest_framework import generics
-from rest_framework.pagination import PageNumberPagination
-from .models import Department, Employee
-from .serializers import DepartmentSerializer, EmployeeSerializer
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout 
-from .forms import UserCreationForm, LoginForm
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Employee, Department
+from .serializers import EmployeeSerializer, DepartmentSerializer
 
-class CustomPagination(PageNumberPagination):
-    page_size = 2
-    page_size_query_param = 'page_size'
-    max_page_size = 100
-
-class EmployeeList(generics.ListCreateAPIView):
-    queryset = Employee.objects.all()
-    serializer_class = EmployeeSerializer
-    pagination_class = CustomPagination
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        department_id = self.request.query_params.get('department_id')
+@api_view(['GET', 'POST'])
+def employee_list(request):
+    if request.method == 'GET':
+        queryset = Employee.objects.all()
+        department_id = request.query_params.get('department_id')
         if department_id:
             queryset = queryset.filter(department_id=department_id)
-        return queryset
+        serializer = EmployeeSerializer(queryset, many=True)
+        return Response(serializer.data)
+    elif request.method == 'POST':
+        serializer = EmployeeSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class EmployeeDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Employee.objects.all()
-    serializer_class = EmployeeSerializer
-    
+@api_view(['GET', 'PUT', 'DELETE'])
+def employee_detail(request, pk):
+    try:
+        employee = Employee.objects.get(pk=pk)
+    except Employee.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
-class DepartmentList(generics.ListCreateAPIView):
-    queryset = Department.objects.all()
-    serializer_class = DepartmentSerializer
-    pagination_class = CustomPagination
+    if request.method == 'GET':
+        serializer = EmployeeSerializer(employee)
+        return Response(serializer.data)
+    elif request.method == 'PUT':
+        serializer = EmployeeSerializer(employee, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'DELETE':
+        employee.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
+@api_view(['GET', 'POST'])
+def department_list(request):
+    if request.method == 'GET':
+        queryset = Department.objects.all()
+        serializer = DepartmentSerializer(queryset, many=True)
+        return Response(serializer.data)
+    elif request.method == 'POST':
+        serializer = DepartmentSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class DepartmentDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Department.objects.all()
-    serializer_class = DepartmentSerializer
+@api_view(['GET', 'PUT', 'DELETE'])
+def department_detail(request, pk):
+    try:
+        department = Department.objects.get(pk=pk)
+    except Department.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
-# Home page
-def home(request):
-    return render(request, 'home.html')
-
-# signup page
-def user_signup(request):
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            username = form.cleaned_data.get('username')
-            raw_password = form.cleaned_data.get('password1')
-            user = authenticate(username=username, password=raw_password)
-            if user is not None:
-                login(request, user)
-                return redirect('home')
-    else:
-        form = UserCreationForm()
-    return render(request, 'sign-up.html', {'form': form})
-
-# login page
-def user_login(request):
-    if request.method == 'POST':
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            username = form.cleaned_data['username']
-            password = form.cleaned_data['password']
-            user = authenticate(request, username=username, password=password)
-            if user:
-                login(request, user)    
-                return redirect('home')
-    else:
-        form = LoginForm()
-    return render(request, 'log-in.html', {'form': form})
-
-# logout page
-def user_logout(request):
-    logout(request)
-    return redirect('login')
+    if request.method == 'GET':
+        serializer = DepartmentSerializer(department)
+        return Response(serializer.data)
+    elif request.method == 'PUT':
+        serializer = DepartmentSerializer(department, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'DELETE':
+        department.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
